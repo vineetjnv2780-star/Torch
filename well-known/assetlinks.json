@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.vineetjnv2780_star.twa",
+        "sha256_cert_fingerprints": ["41:4E:9D:A5:F1:A9:94:22:4B:84:E4:6F:3B:5D:1D:BD:15:0F:32:F7:B0:72:E4:E8:B8:C6:3A:48:47:41:44:AE"]
+      }
+    }]
