@@ -2,125 +2,165 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Torch Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Torch Premium UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #000; color: white; font-family: sans-serif; margin: 0; overflow: hidden; }
+        body { background-color: #09090b; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; margin: 0; overflow: hidden; }
+
+        /* --- 1. The Beautiful Torch Button --- */
+        .power-btn-outer {
+            background: linear-gradient(145deg, #1c1c1e, #000000);
+            box-shadow: 20px 20px 60px #050505, -20px -20px 60px #1f1f1f;
+            transition: all 0.5s ease;
+        }
+        .power-btn-inner {
+            background: linear-gradient(145deg, #000000, #1c1c1e);
+            box-shadow: inset 5px 5px 10px #000000, inset -5px -5px 10px #2a2a2a;
+        }
         
-        /* Premium Button Style */
-        .torch-base {
-            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Active State (Glowing) */
+        .power-btn-outer.active {
+            box-shadow: 0 0 100px rgba(250, 204, 21, 0.3), inset 0 0 20px rgba(250, 204, 21, 0.1);
+            border: 1px solid rgba(250, 204, 21, 0.3);
+        }
+        .power-btn-outer.active .icon-glow {
+            color: #facc15;
+            filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.8));
         }
 
-        /* The Premium Light Ignition Effect */
-        .torch-active {
-            background: #facc15;
-            box-shadow: 0 0 80px rgba(250, 204, 21, 0.6), 0 0 20px rgba(250, 204, 21, 0.4);
-            transform: scale(1.05);
+        /* --- 2. Beautiful Calculator Buttons --- */
+        .glass-panel {
+            background: rgba(18, 18, 18, 0.96);
+            backdrop-filter: blur(40px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
         }
 
-        /* Breathing Pulse Animation */
-        @keyframes breathing {
-            0% { transform: scale(1); opacity: 0.3; }
-            50% { transform: scale(1.4); opacity: 0.15; }
-            100% { transform: scale(1); opacity: 0.3; }
+        .calc-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .pulse-layer {
-            animation: breathing 3s infinite ease-in-out;
-            pointer-events: none;
+        .calc-btn:active {
+            transform: scale(0.92);
+            background: rgba(255, 255, 255, 0.08);
         }
 
-        /* Glass Panel for Calculator */
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 1px solid rgba(255, 255, 255, 0.1); }
-        .calc-panel { position: fixed; bottom: 0; left: 0; right: 0; transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        .calc-panel.open { transform: translateY(0); }
+        /* Special Orange/Yellow Action Button */
+        .btn-accent {
+            background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%);
+            color: black;
+            border: none;
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.4);
+        }
+        .btn-accent:active { box-shadow: 0 5px 10px -5px rgba(250, 204, 21, 0.4); }
+
+        /* Slide Animation */
+        .slide-panel { position: fixed; bottom: 0; left: 0; right: 0; transform: translateY(110%); transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); z-index: 50; }
+        .slide-panel.open { transform: translateY(0); }
     </style>
 </head>
 <body>
 
-    <div class="h-screen flex flex-col items-center justify-between p-10">
-        <div class="w-full flex justify-between opacity-20 text-[10px] font-bold tracking-[0.4em]">
-            <span>LUX CORE v3.0</span>
-            <span>POWER STABLE</span>
+    <div class="h-screen flex flex-col items-center justify-between p-10 pb-20">
+        <div class="w-full flex justify-between items-center opacity-30 text-[10px] font-black tracking-[0.3em]">
+            <span>PRO TOOLS</span>
+            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div><span>READY</span></div>
         </div>
 
-        <div class="relative flex items-center justify-center">
-            <div id="pulse1" class="absolute w-72 h-72 bg-yellow-400 rounded-full hidden pulse-layer"></div>
-            
-            <button id="torchBtn" class="torch-base relative z-10 w-56 h-56 rounded-full flex items-center justify-center border border-white/5 active:scale-90 transition-transform">
-                <i data-lucide="power" size="72" id="powerIcon" class="text-neutral-700 transition-colors duration-500"></i>
+        <div class="relative group">
+            <button id="mainBtn" class="power-btn-outer w-64 h-64 rounded-full flex items-center justify-center relative active:scale-95 transition-transform duration-300">
+                <div class="power-btn-inner w-56 h-56 rounded-full flex items-center justify-center">
+                    <i data-lucide="power" size="80" id="icon" class="icon-glow text-neutral-600 transition-all duration-500"></i>
+                </div>
             </button>
         </div>
 
-        <button id="openCalc" class="p-6 glass rounded-[30px] hover:bg-white/5 active:scale-95 transition-all">
-            <i data-lucide="calculator" size="28" class="text-yellow-400"></i>
+        <button id="btnCalc" class="group flex flex-col items-center gap-3">
+            <div class="p-5 rounded-[24px] bg-[#1c1c1e] border border-white/5 shadow-xl group-active:scale-90 transition-all">
+                <i data-lucide="calculator" size="28" class="text-white/80 group-hover:text-yellow-400 transition-colors"></i>
+            </div>
         </button>
     </div>
 
-    <div id="calcModal" class="calc-panel glass rounded-t-[45px] p-8 pb-12 shadow-2xl">
-        <div class="w-12 h-1 bg-white/10 rounded-full mx-auto mb-8"></div>
-        <div id="display" class="text-right text-7xl font-light mb-10 h-20 overflow-hidden tracking-tighter">0</div>
-        <div class="grid grid-cols-4 gap-4" id="keypad"></div>
-        <button id="closeCalc" class="mt-8 w-full py-4 text-white/20 font-bold uppercase text-[10px] tracking-widest">Close Calculator</button>
+    <div id="panelCalc" class="slide-panel glass-panel rounded-t-[44px] p-6 pb-12">
+        <div class="w-14 h-1.5 bg-neutral-700 rounded-full mx-auto mb-6 opacity-50"></div>
+        
+        <div class="flex justify-between items-center mb-4 px-2">
+            <span class="text-white/20 font-bold text-[11px] tracking-widest uppercase">Standard Mode</span>
+            <button id="closeCalc" class="p-2 bg-white/5 rounded-full text-white/50 hover:bg-white/10 hover:text-white transition"><i data-lucide="x" size="18"></i></button>
+        </div>
+
+        <div id="screen" class="text-right text-7xl font-light mb-8 h-20 overflow-hidden tracking-tighter text-white px-2">0</div>
+        
+        <div class="grid grid-cols-4 gap-3" id="keys"></div>
     </div>
 
     <script>
         lucide.createIcons();
 
-        let isOn = false;
-        let track = null;
-        const torchBtn = document.getElementById('torchBtn');
-        const pulse1 = document.getElementById('pulse1');
-        const powerIcon = document.getElementById('powerIcon');
+        // --- Configuration ---
+        const dom = {
+            btn: document.getElementById('mainBtn'),
+            icon: document.getElementById('icon'),
+            panel: document.getElementById('panelCalc'),
+            screen: document.getElementById('screen')
+        };
+        let state = { on: false, stream: null, exp: "" };
 
-        // --- Premium Torch Animation & Logic ---
-        torchBtn.onclick = async () => {
-            if (navigator.vibrate) navigator.vibrate(isOn ? 15 : 45);
-            
+        // --- Torch Logic ---
+        dom.btn.onclick = async () => {
+            if (navigator.vibrate) navigator.vibrate(state.on ? 20 : 50);
             try {
-                if (isOn) {
-                    track.stop();
-                    isOn = false;
-                    torchBtn.classList.remove('torch-active');
-                    pulse1.classList.add('hidden');
-                    powerIcon.classList.replace('text-black', 'text-neutral-700');
+                if (state.on) {
+                    state.stream.stop();
+                    state.on = false;
+                    dom.btn.classList.remove('active');
                 } else {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                    track = stream.getVideoTracks()[0];
-                    await track.applyConstraints({ advanced: [{ torch: true }] });
-                    isOn = true;
-                    torchBtn.classList.add('torch-active');
-                    pulse1.classList.remove('hidden');
-                    powerIcon.classList.replace('text-neutral-700', 'text-black');
+                    const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    const t = s.getVideoTracks()[0];
+                    await t.applyConstraints({ advanced: [{ torch: true }] });
+                    state.stream = t;
+                    state.on = true;
+                    dom.btn.classList.add('active');
                 }
-            } catch (e) { alert("Torch requires camera permissions."); }
+            } catch (e) { alert("Camera permission required."); }
         };
 
-        // --- Simple Calculator ---
-        const calcModal = document.getElementById('calcModal');
-        const display = document.getElementById('display');
-        let exp = "";
+        // --- Calculator Logic ---
+        document.getElementById('btnCalc').onclick = () => dom.panel.classList.add('open');
+        document.getElementById('closeCalc').onclick = () => dom.panel.classList.remove('open');
 
-        document.getElementById('openCalc').onclick = () => calcModal.classList.add('open');
-        document.getElementById('closeCalc').onclick = () => calcModal.classList.remove('open');
+        const buttons = ['C', '÷', '×', '⌫', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'];
+        
+        buttons.forEach(k => {
+            const b = document.createElement('button');
+            b.innerText = k;
+            
+            // Apply beautiful styles based on button type
+            if (k === '=') {
+                b.className = "calc-btn btn-accent h-16 rounded-[20px] text-2xl font-bold shadow-lg";
+            } else if (['C','÷','×','-','+','⌫'].includes(k)) {
+                b.className = "calc-btn h-16 rounded-[20px] text-xl font-medium text-yellow-400 bg-white/5";
+            } else {
+                b.className = "calc-btn h-16 rounded-[20px] text-xl font-normal text-white";
+            }
 
-        const keys = ['C', '÷', '×', '⌫', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'];
-        keys.forEach(key => {
-            const btn = document.createElement('button');
-            btn.innerText = key;
-            btn.className = `h-16 rounded-[24px] text-xl font-medium active:scale-90 transition-all ${key === '=' ? 'bg-yellow-400 text-black' : 'bg-white/5'}`;
-            btn.onclick = () => {
-                if (key === 'C') exp = "";
-                else if (key === '⌫') exp = exp.slice(0, -1);
-                else if (key === '=') { try { exp = eval(exp.replace(/×/g, '*').replace(/÷/g, '/')).toString(); } catch { exp = "Error"; } }
-                else exp += key;
-                display.innerText = exp || "0";
+            b.onclick = () => {
+                if (navigator.vibrate) navigator.vibrate(10);
+                if (k === 'C') state.exp = "";
+                else if (k === '⌫') state.exp = state.exp.slice(0, -1);
+                else if (k === '=') { 
+                    try { state.exp = eval(state.exp.replace(/×/g, '*').replace(/÷/g, '/')).toString(); } 
+                    catch { state.exp = "Error"; } 
+                }
+                else state.exp += k;
+                dom.screen.innerText = state.exp || "0";
             };
-            document.getElementById('keypad').appendChild(btn);
+            document.getElementById('keys').appendChild(b);
         });
     </script>
 </body>
