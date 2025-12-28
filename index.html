@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Torch Premium UI</title>
+    <title>Torch Premium</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #09090b; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; margin: 0; overflow: hidden; }
+        body { background-color: #09090b; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; }
 
-        /* --- 1. The Beautiful Torch Button --- */
+        /* --- 1. Beautiful 3D Torch Button --- */
         .power-btn-outer {
             background: linear-gradient(145deg, #1c1c1e, #000000);
             box-shadow: 20px 20px 60px #050505, -20px -20px 60px #1f1f1f;
-            transition: all 0.5s ease;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .power-btn-inner {
             background: linear-gradient(145deg, #000000, #1c1c1e);
@@ -24,16 +25,18 @@
         .power-btn-outer.active {
             box-shadow: 0 0 100px rgba(250, 204, 21, 0.3), inset 0 0 20px rgba(250, 204, 21, 0.1);
             border: 1px solid rgba(250, 204, 21, 0.3);
+            transform: scale(1.05);
         }
         .power-btn-outer.active .icon-glow {
             color: #facc15;
             filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.8));
         }
 
-        /* --- 2. Beautiful Calculator Buttons --- */
+        /* --- 2. Calculator & Glass Styles --- */
         .glass-panel {
             background: rgba(18, 18, 18, 0.96);
             backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
         }
@@ -42,21 +45,25 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s;
         }
-        .calc-btn:active {
-            transform: scale(0.92);
-            background: rgba(255, 255, 255, 0.08);
-        }
+        .calc-btn:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.08); }
 
-        /* Special Orange/Yellow Action Button */
         .btn-accent {
             background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%);
             color: black;
             border: none;
             box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.4);
         }
-        .btn-accent:active { box-shadow: 0 5px 10px -5px rgba(250, 204, 21, 0.4); }
+
+        /* --- 3. Install Pop-up Animation --- */
+        #installPrompt {
+            position: fixed; bottom: 30px; left: 20px; right: 20px;
+            transform: translateY(150%);
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 2000;
+        }
+        #installPrompt.show { transform: translateY(0); }
 
         /* Slide Animation */
         .slide-panel { position: fixed; bottom: 0; left: 0; right: 0; transform: translateY(110%); transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); z-index: 50; }
@@ -65,7 +72,7 @@
 </head>
 <body>
 
-    <div class="h-screen flex flex-col items-center justify-between p-10 pb-20">
+    <div class="h-screen flex flex-col items-center justify-between p-10 pb-20 select-none">
         <div class="w-full flex justify-between items-center opacity-30 text-[10px] font-black tracking-[0.3em]">
             <span>PRO TOOLS</span>
             <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div><span>READY</span></div>
@@ -86,16 +93,29 @@
         </button>
     </div>
 
+    <div id="installPrompt" class="glass-panel p-5 rounded-[28px] border border-white/10 flex flex-col gap-4 shadow-2xl">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-yellow-400 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-400/20 text-black">
+                <i data-lucide="download" size="24"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-sm text-white">Install App</h3>
+                <p class="text-xs text-white/40">Add to home screen for better performance</p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button id="closeInstall" class="flex-1 py-3 text-xs font-bold text-white/30 hover:text-white transition">Later</button>
+            <button id="doInstall" class="flex-1 py-3 bg-white text-black rounded-xl text-xs font-bold shadow-lg active:scale-95 transition">Install</button>
+        </div>
+    </div>
+
     <div id="panelCalc" class="slide-panel glass-panel rounded-t-[44px] p-6 pb-12">
         <div class="w-14 h-1.5 bg-neutral-700 rounded-full mx-auto mb-6 opacity-50"></div>
-        
         <div class="flex justify-between items-center mb-4 px-2">
             <span class="text-white/20 font-bold text-[11px] tracking-widest uppercase">Standard Mode</span>
-            <button id="closeCalc" class="p-2 bg-white/5 rounded-full text-white/50 hover:bg-white/10 hover:text-white transition"><i data-lucide="x" size="18"></i></button>
+            <button id="closeCalc" class="p-2 bg-white/5 rounded-full text-white/50"><i data-lucide="x" size="18"></i></button>
         </div>
-
         <div id="screen" class="text-right text-7xl font-light mb-8 h-20 overflow-hidden tracking-tighter text-white px-2">0</div>
-        
         <div class="grid grid-cols-4 gap-3" id="keys"></div>
     </div>
 
@@ -107,11 +127,38 @@
             btn: document.getElementById('mainBtn'),
             icon: document.getElementById('icon'),
             panel: document.getElementById('panelCalc'),
-            screen: document.getElementById('screen')
+            screen: document.getElementById('screen'),
+            prompt: document.getElementById('installPrompt')
         };
         let state = { on: false, stream: null, exp: "" };
+        let deferredPrompt;
 
-        // --- Torch Logic ---
+        // --- 1. Install Pop-up Logic (1 Second Delay) ---
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Wait 1 second before showing
+            setTimeout(() => {
+                dom.prompt.classList.add('show');
+            }, 1000);
+        });
+
+        document.getElementById('doInstall').onclick = async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    dom.prompt.classList.remove('show');
+                }
+                deferredPrompt = null;
+            }
+        };
+
+        document.getElementById('closeInstall').onclick = () => {
+            dom.prompt.classList.remove('show');
+        };
+
+        // --- 2. Torch Logic ---
         dom.btn.onclick = async () => {
             if (navigator.vibrate) navigator.vibrate(state.on ? 20 : 50);
             try {
@@ -130,7 +177,7 @@
             } catch (e) { alert("Camera permission required."); }
         };
 
-        // --- Calculator Logic ---
+        // --- 3. Calculator Logic ---
         document.getElementById('btnCalc').onclick = () => dom.panel.classList.add('open');
         document.getElementById('closeCalc').onclick = () => dom.panel.classList.remove('open');
 
@@ -140,14 +187,9 @@
             const b = document.createElement('button');
             b.innerText = k;
             
-            // Apply beautiful styles based on button type
-            if (k === '=') {
-                b.className = "calc-btn btn-accent h-16 rounded-[20px] text-2xl font-bold shadow-lg";
-            } else if (['C','÷','×','-','+','⌫'].includes(k)) {
-                b.className = "calc-btn h-16 rounded-[20px] text-xl font-medium text-yellow-400 bg-white/5";
-            } else {
-                b.className = "calc-btn h-16 rounded-[20px] text-xl font-normal text-white";
-            }
+            if (k === '=') b.className = "calc-btn btn-accent h-16 rounded-[20px] text-2xl font-bold shadow-lg";
+            else if (['C','÷','×','-','+','⌫'].includes(k)) b.className = "calc-btn h-16 rounded-[20px] text-xl font-medium text-yellow-400 bg-white/5";
+            else b.className = "calc-btn h-16 rounded-[20px] text-xl font-normal text-white";
 
             b.onclick = () => {
                 if (navigator.vibrate) navigator.vibrate(10);
