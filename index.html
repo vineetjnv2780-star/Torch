@@ -2,81 +2,141 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Torch + Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Torch Premium</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #000; color: white; font-family: sans-serif; margin: 0; overflow: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .calc-panel { position: fixed; bottom: 0; left: 0; right: 0; transform: translateY(100%); transition: transform 0.4s ease; z-index: 50; }
+        body { background-color: #000; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; margin: 0; overflow: hidden; }
+        
+        /* Premium Glassmorphism */
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        
+        /* Smooth Scale Animation for Button */
+        .btn-active { transform: scale(0.92); transition: transform 0.1s ease; }
+        
+        /* Torch Glow Animation */
+        #glow { transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        
+        /* Smooth Slide Panel */
+        .calc-panel { position: fixed; bottom: 0; left: 0; right: 0; transform: translateY(110%); transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); z-index: 50; }
         .calc-panel.open { transform: translateY(0); }
+
+        /* Install Pop-up Style */
+        #installPrompt { bottom: 20px; left: 20px; right: 20px; transform: translateY(200%); transition: transform 0.5s ease; }
+        #installPrompt.show { transform: translateY(0); }
     </style>
 </head>
 <body>
 
-    <div class="h-screen flex flex-col items-center justify-between p-10">
-        <div class="w-full flex justify-between opacity-30 text-xs tracking-widest">
-            <span>SYSTEM ACTIVE</span>
-            <span>BATTERY 100%</span>
+    <div class="h-screen flex flex-col items-center justify-between p-10 pb-16">
+        <div class="w-full flex justify-between items-center opacity-40 text-[10px] font-bold tracking-[0.3em]">
+            <span>ENGINE v2.0</span>
+            <div class="flex items-center gap-1"><i data-lucide="battery" size="14"></i><span>98%</span></div>
         </div>
 
-        <div class="relative">
-            <div id="glow" class="absolute inset-0 bg-yellow-400/20 blur-[80px] rounded-full hidden"></div>
-            <button id="torchBtn" class="relative z-10 w-56 h-56 rounded-full bg-neutral-900 border-2 border-white/5 flex items-center justify-center transition-all duration-500">
-                <i data-lucide="power" size="80" id="powerIcon" class="text-neutral-700"></i>
+        <div class="relative group">
+            <div id="glow" class="absolute inset-0 bg-yellow-400/0 blur-[120px] rounded-full scale-50"></div>
+            <button id="torchBtn" class="relative z-10 w-60 h-60 rounded-full bg-gradient-to-b from-neutral-800 to-neutral-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-center border-t border-white/10 active:btn-active transition-all duration-500">
+                <div id="innerRing" class="absolute inset-4 rounded-full border border-white/5"></div>
+                <i data-lucide="power" size="70" id="powerIcon" class="text-neutral-600 transition-colors duration-700"></i>
             </button>
         </div>
 
-        <button id="openCalc" class="p-5 glass rounded-full hover:bg-yellow-400 hover:text-black transition-all">
-            <i data-lucide="calculator" size="32"></i>
-        </button>
+        <div class="flex flex-col items-center gap-6">
+            <p id="statusText" class="text-[10px] tracking-[0.5em] text-white/20 uppercase font-bold">Standby</p>
+            <button id="openCalc" class="p-6 glass rounded-3xl hover:bg-white/10 active:scale-90 transition-all shadow-2xl">
+                <i data-lucide="calculator" size="28" class="text-yellow-400"></i>
+            </button>
+        </div>
     </div>
 
-    <div id="calcModal" class="calc-panel bg-[#1c1c1e] rounded-t-[40px] p-8 pb-12 border-t border-white/10 shadow-2xl">
-        <div class="flex justify-between items-center mb-6">
-            <span class="text-white/30 font-bold uppercase tracking-widest text-xs">Calculator</span>
-            <button id="closeCalc" class="p-2 bg-white/5 rounded-full"><i data-lucide="x" size="20"></i></button>
+    <div id="installPrompt" class="fixed z-[100] glass p-5 rounded-[24px] flex flex-col gap-3 shadow-2xl mx-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-yellow-400 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-400/20">
+                <i data-lucide="zap" class="text-black"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-sm">Install Torch Lite</h3>
+                <p class="text-xs text-white/50">Add to home screen for offline use</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button id="closeInstall" class="flex-1 py-2 text-xs font-bold text-white/40">Not Now</button>
+            <button id="doInstall" class="flex-1 py-2 bg-white text-black rounded-xl text-xs font-bold shadow-lg">Install Now</button>
+        </div>
+    </div>
+
+    <div id="calcModal" class="calc-panel glass rounded-t-[40px] p-8 pb-12 shadow-2xl border-t border-white/10">
+        <div class="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6"></div>
+        <div class="flex justify-between items-center mb-8">
+            <span class="text-white/20 font-black uppercase tracking-[0.2em] text-[10px]">Scientific Module</span>
+            <button id="closeCalc" class="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full"><i data-lucide="x" size="18"></i></button>
         </div>
         
-        <div id="display" class="text-right text-6xl font-light mb-8 h-16 truncate pr-2">0</div>
+        <div id="display" class="text-right text-7xl font-light mb-10 h-20 overflow-hidden pr-2 tracking-tighter">0</div>
         
-        <div class="grid grid-cols-4 gap-3" id="keypad">
-            </div>
+        <div class="grid grid-cols-4 gap-4" id="keypad"></div>
     </div>
 
     <script>
-        // Initialize Icons
         lucide.createIcons();
 
-        // --- Torch Logic ---
+        // --- Premium Torch Logic ---
         let isOn = false;
         let track = null;
         const torchBtn = document.getElementById('torchBtn');
         const glow = document.getElementById('glow');
         const powerIcon = document.getElementById('powerIcon');
+        const statusText = document.getElementById('statusText');
 
         torchBtn.onclick = async () => {
+            if (navigator.vibrate) navigator.vibrate(isOn ? 20 : 60);
             try {
                 if (isOn) {
                     track.stop();
                     isOn = false;
-                    torchBtn.className = "relative z-10 w-56 h-56 rounded-full bg-neutral-900 border-2 border-white/5 flex items-center justify-center transition-all duration-500";
-                    glow.classList.add('hidden');
-                    powerIcon.classList.replace('text-black', 'text-neutral-700');
+                    torchBtn.style.backgroundColor = "";
+                    glow.style.backgroundColor = "transparent";
+                    glow.style.transform = "scale(0.5)";
+                    powerIcon.classList.replace('text-yellow-400', 'text-neutral-600');
+                    statusText.innerText = "Standby";
+                    statusText.style.color = "";
                 } else {
                     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                     track = stream.getVideoTracks()[0];
                     await track.applyConstraints({ advanced: [{ torch: true }] });
                     isOn = true;
-                    torchBtn.className = "relative z-10 w-56 h-56 rounded-full bg-yellow-400 border-2 border-yellow-200 shadow-2xl flex items-center justify-center transition-all duration-500";
-                    glow.classList.remove('hidden');
-                    powerIcon.classList.replace('text-neutral-700', 'text-black');
+                    glow.style.backgroundColor = "rgba(250, 204, 21, 0.4)";
+                    glow.style.transform = "scale(1.2)";
+                    powerIcon.classList.replace('text-neutral-600', 'text-yellow-400');
+                    statusText.innerText = "Active";
+                    statusText.style.color = "#facc15";
                 }
-            } catch (e) { alert("Torch not supported on this device/browser."); }
+            } catch (e) { alert("Camera access required for Torch."); }
         };
 
-        // --- Calculator Logic ---
+        // --- Install Pop-up Logic ---
+        let deferredPrompt;
+        const installPrompt = document.getElementById('installPrompt');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            setTimeout(() => installPrompt.classList.add('show'), 3000);
+        });
+
+        document.getElementById('doInstall').onclick = () => {
+            deferredPrompt.prompt();
+            installPrompt.classList.remove('show');
+        };
+
+        document.getElementById('closeInstall').onclick = () => {
+            installPrompt.classList.remove('show');
+        };
+
+        // --- Calculator Module ---
         const calcModal = document.getElementById('calcModal');
         const display = document.getElementById('display');
         let currentExp = "";
@@ -90,18 +150,17 @@
         keys.forEach(key => {
             const btn = document.createElement('button');
             btn.innerText = key;
-            btn.className = `h-14 rounded-2xl text-xl font-medium transition-all active:scale-90 ${key === '=' ? 'bg-yellow-400 text-black' : 'bg-white/5'}`;
+            btn.className = `h-16 rounded-[22px] text-xl font-medium active:scale-90 transition-all ${key === '=' ? 'bg-yellow-400 text-black' : 'bg-white/5'}`;
             if (['C','÷','×','-','+','DEL'].includes(key)) btn.classList.add('text-yellow-400');
             
             btn.onclick = () => {
+                if (navigator.vibrate) navigator.vibrate(10);
                 if (key === 'C') currentExp = "";
                 else if (key === 'DEL') currentExp = currentExp.slice(0, -1);
                 else if (key === '=') {
                     try { currentExp = eval(currentExp.replace(/×/g, '*').replace(/÷/g, '/')).toString(); } 
                     catch { currentExp = "Error"; }
-                } else {
-                    currentExp += key;
-                }
+                } else { currentExp += key; }
                 display.innerText = currentExp || "0";
             };
             keypad.appendChild(btn);
