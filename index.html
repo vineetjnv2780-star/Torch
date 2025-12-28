@@ -1,36 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Torch Lite + Calc</title>
-    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torch + Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-      body {
-        background-color: #000;
-        margin: 0;
-        overflow: hidden;
-      }
-      .glass {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      @keyframes slideUp {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
-      }
-      .animate-slide-up {
-        animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      }
+        body { background-color: #000; color: white; font-family: sans-serif; margin: 0; overflow: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .calc-panel { position: fixed; bottom: 0; left: 0; right: 0; transform: translateY(100%); transition: transform 0.4s ease; z-index: 50; }
+        .calc-panel.open { transform: translateY(0); }
     </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    
-    <script type="module" src="/index.js"></script>
-  </body>
+</head>
+<body>
+
+    <div class="h-screen flex flex-col items-center justify-between p-10">
+        <div class="w-full flex justify-between opacity-30 text-xs tracking-widest">
+            <span>SYSTEM ACTIVE</span>
+            <span>BATTERY 100%</span>
+        </div>
+
+        <div class="relative">
+            <div id="glow" class="absolute inset-0 bg-yellow-400/20 blur-[80px] rounded-full hidden"></div>
+            <button id="torchBtn" class="relative z-10 w-56 h-56 rounded-full bg-neutral-900 border-2 border-white/5 flex items-center justify-center transition-all duration-500">
+                <i data-lucide="power" size="80" id="powerIcon" class="text-neutral-700"></i>
+            </button>
+        </div>
+
+        <button id="openCalc" class="p-5 glass rounded-full hover:bg-yellow-400 hover:text-black transition-all">
+            <i data-lucide="calculator" size="32"></i>
+        </button>
+    </div>
+
+    <div id="calcModal" class="calc-panel bg-[#1c1c1e] rounded-t-[40px] p-8 pb-12 border-t border-white/10 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <span class="text-white/30 font-bold uppercase tracking-widest text-xs">Calculator</span>
+            <button id="closeCalc" class="p-2 bg-white/5 rounded-full"><i data-lucide="x" size="20"></i></button>
+        </div>
+        
+        <div id="display" class="text-right text-6xl font-light mb-8 h-16 truncate pr-2">0</div>
+        
+        <div class="grid grid-cols-4 gap-3" id="keypad">
+            </div>
+    </div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- Torch Logic ---
+        let isOn = false;
+        let track = null;
+        const torchBtn = document.getElementById('torchBtn');
+        const glow = document.getElementById('glow');
+        const powerIcon = document.getElementById('powerIcon');
+
+        torchBtn.onclick = async () => {
+            try {
+                if (isOn) {
+                    track.stop();
+                    isOn = false;
+                    torchBtn.className = "relative z-10 w-56 h-56 rounded-full bg-neutral-900 border-2 border-white/5 flex items-center justify-center transition-all duration-500";
+                    glow.classList.add('hidden');
+                    powerIcon.classList.replace('text-black', 'text-neutral-700');
+                } else {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    track = stream.getVideoTracks()[0];
+                    await track.applyConstraints({ advanced: [{ torch: true }] });
+                    isOn = true;
+                    torchBtn.className = "relative z-10 w-56 h-56 rounded-full bg-yellow-400 border-2 border-yellow-200 shadow-2xl flex items-center justify-center transition-all duration-500";
+                    glow.classList.remove('hidden');
+                    powerIcon.classList.replace('text-neutral-700', 'text-black');
+                }
+            } catch (e) { alert("Torch not supported on this device/browser."); }
+        };
+
+        // --- Calculator Logic ---
+        const calcModal = document.getElementById('calcModal');
+        const display = document.getElementById('display');
+        let currentExp = "";
+
+        document.getElementById('openCalc').onclick = () => calcModal.classList.add('open');
+        document.getElementById('closeCalc').onclick = () => calcModal.classList.remove('open');
+
+        const keys = ['C', '÷', '×', 'DEL', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'];
+        const keypad = document.getElementById('keypad');
+
+        keys.forEach(key => {
+            const btn = document.createElement('button');
+            btn.innerText = key;
+            btn.className = `h-14 rounded-2xl text-xl font-medium transition-all active:scale-90 ${key === '=' ? 'bg-yellow-400 text-black' : 'bg-white/5'}`;
+            if (['C','÷','×','-','+','DEL'].includes(key)) btn.classList.add('text-yellow-400');
+            
+            btn.onclick = () => {
+                if (key === 'C') currentExp = "";
+                else if (key === 'DEL') currentExp = currentExp.slice(0, -1);
+                else if (key === '=') {
+                    try { currentExp = eval(currentExp.replace(/×/g, '*').replace(/÷/g, '/')).toString(); } 
+                    catch { currentExp = "Error"; }
+                } else {
+                    currentExp += key;
+                }
+                display.innerText = currentExp || "0";
+            };
+            keypad.appendChild(btn);
+        });
+    </script>
+</body>
 </html>
